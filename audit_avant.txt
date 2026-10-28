@@ -1,0 +1,7 @@
+Répartition : {'PDF': 100, 'Excel': 175, 'Feuille vide': 27}
+Bruit : 95 chunks pollués sur 100
+Début coupé : 50 sur 100
+OCR : ';' = 295 | ',' = 314
+Excel sans en-tête : 142 sur 143
+Excel avec NaN : 143 sur 143
+Doublons : 16
