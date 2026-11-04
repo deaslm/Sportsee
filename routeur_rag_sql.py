@@ -21,7 +21,7 @@ def repondre_rag(question: str) -> str:
     chunks = vs.search(question, k=5)
     contexte = "\n\n".join(c["text"] for c in chunks)
     rep = client.chat(
-        model="mistral-small-latest",
+        model="mistral-large-latest",
         messages=[{"role": "user", "content":
                    f"Tu es un assistant expert en basketball. Réponds uniquement à partir du contexte.\n\n"
                    f"Contexte:\n{contexte}\n\nQuestion: {question}\nRéponse:"}]
@@ -51,7 +51,7 @@ outils = [
 ]
 
 # Création de l'agent 
-llm = ChatMistralAI(model="mistral-small-latest", api_key=KEY, temperature=0)
+llm = ChatMistralAI(model="mistral-large-latest", api_key=KEY, temperature=0)
 prompt = hub.pull("hwchase17/react")                # prompt ReAct (Reasoning/Acting), définit le format que l’agent doit suivre
 
 agent = create_react_agent(llm=llm, tools=outils, prompt=prompt)

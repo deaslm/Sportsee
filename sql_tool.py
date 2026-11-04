@@ -14,7 +14,7 @@ KEY = os.getenv("MISTRAL_API_KEY")
 
 db = SQLDatabase.from_uri("sqlite:///sportsee.db", sample_rows_in_table_info=0)       # forcer Mistral d’exécuter la requête SQL
 
-llm = ChatMistralAI(model="mistral-small-latest", api_key=KEY, temperature=0) 
+llm = ChatMistralAI(model="mistral-large-latest", api_key=KEY, temperature=0)
 
 # FEW-SHOT : exemples question pour guider le LLM vers les bonnes tables et colonnes
 
@@ -37,7 +37,7 @@ SQL: SELECT joueur, reb_off, pts_total FROM stats_joueurs ORDER BY pts_total DES
 # PRÉFIXE : contexte donné au LLM avant génération du SQL
 # On lui dit qui il est, quelles tables il a et on lui donne des exemples pour éviter les erreurs de colonnes
 
-PREFIX = f"""Tu es un assistant expert en basketball. 
+PREFIX =f"""Tu es un assistant expert en basketball. 
 Tu as accès à une base de données SQLite avec les tables : players, teams, stats_joueurs, stats_equipes.
 Utilise uniquement les données de la base.
 
