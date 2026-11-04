@@ -32,6 +32,7 @@ def rag_trace(question: str, rag_fn, categorie: str = "non_classée") -> ReponsR
         # Trace la génération de la réponse
         with logfire.span("llm_generation"):
             reponse_texte, chunks_bruts = rag_fn(entree.question)
+            logfire.info("reponse_generee", reponse=reponse_texte)
 
         # Trace la validation de la sortie
         with logfire.span("validation_sortie"):
