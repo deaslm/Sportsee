@@ -77,10 +77,10 @@ data = {"question": [], "answer": [], "contexts": [], "ground_truth": [], "categ
 
 for q, gt, cat in TESTS:
     print(f"  [{cat}] {q[:55]}...")
-    reponse_texte, chunks_bruts = rag_repondre(q)
+    sortie = rag_trace(q, rag_repondre, cat)
     data["question"].append(q)
-    data["answer"].append(reponse_texte)
-    data["contexts"].append(chunks_bruts)
+    data["answer"].append(sortie.reponse)
+    data["contexts"].append([c.text for c in sortie.chunks])
     data["ground_truth"].append(gt)
     data["category"].append(cat)
 
