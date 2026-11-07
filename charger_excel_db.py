@@ -74,17 +74,6 @@ class LigneEquipe(BaseModel):
     nom: str
 
 
-class LigneStat(BaseModel):
-    """Valide une ligne du top 15 joueurs."""
-    joueur: str
-    pts_total: Optional[float] = None
-    pct_tirs: Optional[float] = None
-    pct_tirs3: Optional[float] = None
-    pct_lf: Optional[float] = None
-    reb_off: Optional[float] = None
-    impact: Optional[float] = None
-
-
 class LigneStatEquipe(BaseModel):
     """Valide une ligne de stats d'équipe."""
     code: str
@@ -124,15 +113,6 @@ CREATE TABLE IF NOT EXISTS teams (
     nom TEXT NOT NULL
 )""")
 
-# Table stats top 15 joueurs 
-cur.execute("""
-CREATE TABLE IF NOT EXISTS stats_joueurs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    joueur TEXT NOT NULL, pts_total REAL,
-    pct_tirs REAL, pct_tirs3 REAL, pct_lf REAL,
-    reb_off REAL, impact REAL
-)""")
-
 # Table stats par équipe
 cur.execute("""
 CREATE TABLE IF NOT EXISTS stats_equipes (
@@ -142,8 +122,17 @@ CREATE TABLE IF NOT EXISTS stats_equipes (
 
 conn.commit()
 
+# Vider les tables avant import pour éviter les doublons
+print("Nettoyage des tables existantes...")
+cur.execute("DELETE FROM players")
+cur.execute("DELETE FROM teams")
+cur.execute("DELETE FROM stats_equipes")
+cur.execute("DROP TABLE IF EXISTS stats_joueurs")  
+conn.commit()
+print("Tables vidées")
 
-# INGESTION PLAYERS 
+
+# INGESTION PLAYERS
 
 print("Chargement des joueurs...")
 # header=1 car la ligne 0 est un titre et la ligne 1 contient les noms de colonnes
@@ -203,7 +192,7 @@ for _, row in df.iterrows():
         err += 1
         print(f"  Erreur : {e}")
 
-print(f"  -> {ok} joueurs insérés, {err} erreurs")
+print(f"{ok} joueurs insérés, {err} erreurs")
 
 # INGESTION TEAMS
 
@@ -219,7 +208,7 @@ for _, row in df_eq.iterrows():
         ok += 1
     except Exception as e:
         err += 1
-print(f"  -> {ok} équipes insérées, {err} erreurs")
+print(f"{ok} équipes insérées, {err} erreurs")
 
 # INGESTION STATS EQUIPES
 
@@ -251,38 +240,9 @@ for _, row in df_eq_stats.iterrows():
     except Exception as e:
         err += 1
         print(f"  Erreur : {e}")
-print(f"  -> {ok} stats équipes insérées, {err} erreurs")
-
-# INGESTION STATS JOUEURS (top 15 meilleurs)
-
-print("Chargement du top 15...")
-df_raw = pd.read_excel(CHEMIN_EXCEL, sheet_name="Analyse", header=None)
-idx = df_raw[df_raw[0] == "Players"].index[0]
-df_top = pd.read_excel(CHEMIN_EXCEL, sheet_name="Analyse", header=idx)
-df_top = df_top.dropna(subset=["Players"]).head(15)
-
-ok, err = 0, 0
-for _, row in df_top.iterrows():
-    try:
-        s = LigneStat(
-            joueur=row["Players"],
-            pts_total=row.get("Nombre de point total"),
-            pct_tirs=row.get("Pourcentage de tirs réussis"),
-            pct_tirs3=row.get("Pourcentage de réussite aux tirs à 3 points"),
-            pct_lf=row.get("Pourcentage de réussite aux lancers francs"),
-            reb_off=row.get("Rebonds offensifs"),
-            impact=row.get("Estimation de l'impact du joueur")
-        )
-        cur.execute("INSERT INTO stats_joueurs VALUES (NULL,?,?,?,?,?,?,?)",
-                    (s.joueur, s.pts_total, s.pct_tirs, s.pct_tirs3,
-                     s.pct_lf, s.reb_off, s.impact))
-        ok += 1
-    except Exception as e:
-        err += 1
-        print(f"  Erreur : {e}")
-print(f"  -> {ok} stats joueurs insérées, {err} erreurs")
+print(f"{ok} stats équipes insérées, {err} erreurs")
 
 conn.commit()
 conn.close()
 print("Base SQLite créée : sportsee.db")
-print("  Tables : players, teams, stats_joueurs, stats_equipes")
+print("Tables : players, teams, stats_equipes")
