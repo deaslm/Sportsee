@@ -15,20 +15,20 @@ logfire.configure(
     service_name="sportsee-rag"
 )
 
-
 def rag_trace(question: str, rag_fn, categorie: str = "non_classée") -> ReponsRAG:
     """
-    Enveloppe la fonction RAG avec des traces Logfire.
-    - Valide la question avec Pydantic avant d'appeler le RAG
-    - Trace la recherche FAISS et la génération LLM
-    - Valide la sortie avec Pydantic avant de retourner
+    Enveloppe la chaîne RAG/SQL avec des traces Logfire.
+    - Valide la question avec Pydantic avant d'appeler la chaîne
+    - Trace chaque étape de la chaîne (routage, recherche, SQL, rédaction)
+    - Valide la sortie avec Pydantic avant de la retourner
     """
 
-    # Validation de l'entrée via Pydantic
-    entree = QuestionEntree(question=question)
+    # Trace tout l'appel
+    with logfire.span("rag_pipeline", question=question, categorie=categorie):
 
-    # Trace tout l'appel RAG
-    with logfire.span("rag_pipeline", question=entree.question, categorie=categorie):
+        # Trace la validation de l'entrée
+        with logfire.span("validation_entree"):
+            entree = QuestionEntree(question=question)
 
         # Trace l'exécution de toute la chaîne (routage, recherche, SQL, rédaction)
         with logfire.span("execution_chaine"):
