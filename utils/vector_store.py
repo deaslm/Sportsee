@@ -9,6 +9,29 @@ from mistralai.client import MistralClient
 from mistralai.exceptions import MistralAPIException
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document # Utilisé pour le format attendu par le splitter
+import math
+from pydantic import BaseModel, Field, field_validator
+
+# VALIDATION PYDANTIC DU PIPELINE : chunks et embeddings contrôlés avant d'entrer dans l'index
+class ChunkValide(BaseModel):
+    """Un chunk doit avoir un identifiant et un texte non vides."""
+    id: str = Field(min_length=1)
+    text: str = Field(min_length=1)
+    metadata: dict
+
+
+class EmbeddingValide(BaseModel):
+    """Un embedding doit avoir la bonne dimension et ne contenir que des nombres valides."""
+    vecteur: list[float]
+
+    @field_validator("vecteur")
+    @classmethod
+    def vecteur_valide(cls, v):
+        if len(v) != 1024:                               # dimension des embeddings mistral-embed
+            raise ValueError(f"Dimension inattendue : {len(v)}")
+        if not all(math.isfinite(x) for x in v):         # refuse NaN et infini
+            raise ValueError("Embedding contenant des valeurs invalides (NaN ou infini)")
+        return v
 
 from .config import (
     MISTRAL_API_KEY, EMBEDDING_MODEL, EMBEDDING_BATCH_SIZE,
@@ -72,7 +95,7 @@ class VectorStoreManager:
                         "start_index": chunk.metadata.get("start_index", -1) # Position de début (en caractères)
                     }
                 }
-                all_chunks.append(chunk_dict)
+                all_chunks.append(ChunkValide(**chunk_dict).model_dump())   # validation Pydantic du chunk
             doc_counter += 1
 
         logging.info(f"Total de {len(all_chunks)} chunks créés.")
@@ -103,6 +126,7 @@ class VectorStoreManager:
                     input=texts_to_embed
                 )
                 batch_embeddings = [data.embedding for data in response.data]
+                batch_embeddings = [EmbeddingValide(vecteur=e).vecteur for e in batch_embeddings]   # validation Pydantic
                 all_embeddings.extend(batch_embeddings)
             except MistralAPIException as e:
                 logging.error(f"Erreur API Mistral lors de la génération d'embeddings (lot {batch_num}): {e}")

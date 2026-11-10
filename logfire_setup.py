@@ -1,5 +1,6 @@
-# Pydantic Logfire pour tracer la chaîne RAG pas à pas.
-# Chaque appel RAG (recherche FAISS + génération LLM) sera visible en temps réel dans le dashboard Logfire.
+# Pydantic Logfire pour tracer la chaîne RAG/LLM pas à pas.
+# Chaque question est visible en temps réel dans le dashboard Logfire : décision de routage,
+# recherche FAISS, génération et exécution SQL, rédaction de la réponse, validation Pydantic.
 
 import os
 import logfire
@@ -29,8 +30,8 @@ def rag_trace(question: str, rag_fn, categorie: str = "non_classée") -> ReponsR
     # Trace tout l'appel RAG
     with logfire.span("rag_pipeline", question=entree.question, categorie=categorie):
 
-        # Trace la génération de la réponse
-        with logfire.span("llm_generation"):
+        # Trace l'exécution de toute la chaîne (routage, recherche, SQL, rédaction)
+        with logfire.span("execution_chaine"):
             reponse_texte, chunks_bruts = rag_fn(entree.question)
             logfire.info("reponse_generee", reponse=reponse_texte)
 

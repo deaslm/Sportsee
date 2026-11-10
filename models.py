@@ -10,17 +10,18 @@ class QuestionEntree(BaseModel):
     # La question doit faire au moins 5 caractères
     question: str = Field(..., min_length=5, description="Question posée au RAG")
 
-    @field_validator("question")
+    @field_validator("question", mode="before")
     @classmethod
     def question_non_vide(cls, v):
-        # Rejette les questions vides ou composées uniquement d'espaces
-        if not v.strip():
+        # Enlève les espaces avant le contrôle de longueur, et rejette les questions vides
+        v = str(v).strip()
+        if not v:
             raise ValueError("La question ne peut pas être vide.")
-        return v.strip()
+        return v
 
 
 class ChunkRecupere(BaseModel):
-    """Représente un chunk de texte retourné par la recherche vectorielle FAISS."""
+    """Représente un contexte utilisé pour répondre : extrait FAISS ou résultat de l'outil SQL."""
 
     # Le texte du chunk doit exister (non vide)
     text: str = Field(..., min_length=1, description="Contenu du chunk récupéré")

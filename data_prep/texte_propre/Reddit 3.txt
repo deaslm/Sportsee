@@ -1,46 +1,26 @@
 
-a 10j hqppp Comm. du top 1%
 Reggie Miller is the most efficient first option in NBA playoff history The Pacers-Knicks series had me going back through Reggie Miller's career and it highlighted something that goes a little under the radar that Reggie Miller is the most efficient first option ever.
 Here is how Reggie stacks up against 20 of the best first options in league history, based on total playoff points and efficiency relative to era:
 Kawhi Leonard
-3133
 Jerry West
-4457
 Stephen Curry
-4147
 Kareem Abdul-Jabbar
-5762
 Kevin Durant
-4985
 Charles Barkley
-2833
 Dirk Nowitzki
-3663
 LeBron James
-8289
 Shaquille O'Neal
-5250
 Wilt Chamberlain
-3607
 Nikola Jokic
-2580
 Michael Jordan
-5987
 James Harden
-3895
 Hakeem Olajuwon
-3755
 Julius Erving
-4580
 Tim Duncan
-5172
 Dwyane Wade
-3954
 Giannis Antetokounmpo 2270
 Kobe Bryant
-5640
 Larry Bird
-3897
 Some takeaways:
 1. Kawhi is the only one that comes quite close. The raw gap between Reggie and even Steph is as big as the gap between Jordan and Kobe. 2. Reggie obviously has a lower volume than most of these scorers, but if you filter for his prime years from 1991-2002, when he was a 24PPG scorer across 100+ playoff games in a slow era, his rTS was 115. Which would still top the list. 3. Being quite literally the most efficient first option of all-time; with his longevity; with 14 series wins without a single HOF teammate (except a 34y0 Chris Mullin), and having led his team to the playoffs 15
 Edit: sorted table
@@ -149,44 +129,25 @@ It grinds my gear when see data in a table that is not sorted logically .
 
 99'=
 Kawhi Leonard
-3133
 Stephen Curry
-4147
 Jerry West
-4457
 Kareem Abdul-Jabbar
-5762
 Kevin Durant
-4985
 Charles Barkley
-2833
 Dirk Nowitzki
-3663
 LeBron James
-8289
 Shaquille O'Neal
-5250
 Wilt Chamberlain
-3607
 Nikola Jokic
-2580
 Michael Jordan
-5987
 James Harden
-3895
 Hakeem Olajuwon
-3755
 Julius Erving
-4580
 Tim Duncan
-5172
 Dwyane Wade
-3954
 Giannis Antetokounmpo 2270
 Kobe Bryant
-5640
 Larry Bird
-3897
 
 
 Why'd you remove Dirk's 108?
@@ -202,7 +163,7 @@ Didn't expect Bird, Giannis; and Duncan to be that low.
 Giannis | can understand; his ft% (and high volume of them) really brings down the overall ts% even despite being one of the most efficient 2pt scorers in league history.
 
 
-TS rewards three point shooters. Also it's not "low"  this is a list of the top of all time
+TS rewards three point shooters. Also it's not "low" this is a list of the top of all time
 
 mchale was huge in the playoffs
 
@@ -223,7 +184,6 @@ Kawhi is literally right next to Reggie. What
 
 
 OP edited the post to sort the table
-Cletus_Starfish
 Wasn't originally. Thankfully OP edited the post; but it was in a seemingly totally random order before.
 
 
@@ -232,7 +192,6 @@ was confused until saw Kawhai Leonard and Jerry West. In any case, am not sure h
 
 Yeah was gonna say. Not sorted by points OR rts, like wtf. Not even alphabetical order
 
-Répondre hqppp AO ~10 j Comm. du top 19
 
 Wdym its sorted by row number
 
@@ -246,7 +205,7 @@ How is that list ordered?
 By Agenda
 
 
-hqppp AO -10 j Comm. du top 1% It's my best attempt at capturing the 20 best playoff scorers. Order is a bit random but criteria for inclusion was mainly based on total playoff points, but exercising some common sense to prioritize including first options like Barkley /Giannis/ Jokic over guys like Tony Parker and Scottie; who are high on the list just because of number of playoff games played.
+It's my best attempt at capturing the 20 best playoff scorers. Order is a bit random but criteria for inclusion was mainly based on total playoff points, but exercising some common sense to prioritize including first options like Barkley /Giannis/ Jokic over guys like Tony Parker and Scottie; who are high on the list just because of number of playoff games played.
 
 
 Thanks for the list and now for coming back and fixing the sorting. Appreciate the quality post OP
@@ -421,44 +380,25 @@ Relative True Shooting is my guess
 
 '799
 Kawhi Leonard
-3133
 Stephen Curry
-4147
 Jerry West
-4457
 Kareem Abdul-Jabbar
-5762
 Kevin Durant
-4985
 Charles Barkley
-2833
 Dirk Nowitzki
-3663
 LeBron James
-8289
 Shaquille O'Neal
-5250
 Wilt Chamberlain
-3607
 Nikola Jokic
-2580
 Michael Jordan
-5987
 James Harden
-3895
 Hakeem Olajuwon
-3755
 Julius Erving
-4580
 Tim Duncan
-5172
 Dwyane Wade
-3954
 Giannis Antetokounmpo 2270
 Kobe Bryant
-5640
 Larry Bird
-3897
 
 
 Wow, Kawhi was basically one or two playoff runs from passing Larry Bird, that is so unexpected.
@@ -506,7 +446,6 @@ It's funny because Reggie is probably the consensus worst player on this list
 think the most surprising take to me is that Larry Bird is at the bottom of this list.
 
 wasn't around to watch; but wasn't he pretty reliant on screens to get open; and took less shots because he couldn't self-create? | think that takes away from the first option assertion because self creation should IMO be a part of first option status.
-UuiEI
 
 
 This is why | joined this subreddit. love this stuff
@@ -528,11 +467,9 @@ relative to league average TS% think
 
 Points 1 and 2 can be true, but don't provide enough to support the argument proposed in point 3. There are at least a dozen other guards who unlike Reggie actually won MVPs and/or Finals MVPs; so maybe efficiency isn't the most important statistic in measuring a guard's value:
 Niy 'cyyic Jlili UUl Cuiijiucicu LUP Ju Viayei Ui
-Lillic
-11515
 1Ui€ LU L5 Yaic Lliai Ciiliciily
 
-Répondre hqppp Ao -10 j Comm. du top 1% Name me one player who comes close to 14 playoff series wins with zero HOF teammates in their prime.
+Name me one player who comes close to 14 playoff series wins with zero HOF teammates in their prime.
 4 -2
 
 
@@ -547,7 +484,7 @@ How many does Butler have?
 
 Jerry West; Oscar Robertson; and Dwyane Wade were all comfortably more valuable then Reggie Longevity is great and all but |m taking 14 years of those guys over 18 years of Reggie no question about it
 
-though. Dude played forever, never missed time; and produced some of the most iconic basketball memories of my childhood. Definitely left his mark on the game 4 1 Répondre hqppp Ao -10 j Comm. du top 19
+though. Dude played forever, never missed time; and produced some of the most iconic basketball memories of my childhood. Definitely left his mark on the game
 West had Elgin Baylor for most of his career, along with a few years of Goodrich and Wilt. Reggie had nobody of comparable quality. West was 16-12 in playoff series for his career with ring, compared to 14-15 with zero rings for Reggie. Given the massive difference in supporting cast; think it's still closer than you think; although West wins out as a more dominant player.
 Oscar won 2 playoff series before becoming Kareem's sidekick, don't think his gaudy stats are enough to push him over Reggie helping the Pacers win 14 playoff series.
 Wade won 22 playoff series rings but 14 of those rings were with the arguable GOAT at his apex. The Heat had some really lean years with Wade; without LeBron. Wade also fell off very quickly after 2011.
@@ -606,7 +543,6 @@ Do we have numbers when excluding the shorter 3pt line?
 6th most valuable guard. Don't forget Dwade was the only reason Miami has ANY rings. Hes the second; or third best 2 guard in history; depending on how you value Kobe
 
 
-Modifié ya -9 j
 This is really cool, thank you! I've been trying to poke holes but really can't :)
 Couple guys to call out:
 Kevin McHale; 3000+ playoff points; 115 rTS%, led in playoff points a couple years over Bird. James Worthy; 3000+ playoff points, 107 rTS%, was the Lakers #1 scorer for majority of his career
@@ -690,11 +626,10 @@ remember, was there: don't have any issue with OP saying Miller was a great play
 If the argument is "he stayed with Indiana for a really long time; so he overall was more valuable to Indiana than Wade was to Miami" _ I guess? Maybe?
 
 
-You are getting downvoted; but do not recall hardly anyone saying Reggie is the best guard in the league In fact; Indiana really showed up  what? 94-95, 1998, and 2000? 5 years max for deep playoff runs?
+You are getting downvoted; but do not recall hardly anyone saying Reggie is the best guard in the league In fact; Indiana really showed up what? 94-95, 1998, and 2000? 5 years max for deep playoff runs?
 Other guards were considered much more valuable; no offense to Reggie.
 
 
-hqppp Ao ~10 j Comm. du top 1%
 Malone's caliber throughout his career. Maybe Zeke for his peak, but again; really great teammates.
 
 Nash; Wade; Iverson; Drexler, West; Robertson; Cousy; even Goodrich; all had arguably better careers and were arguably better players relative to players in their eras. Maybe even Dame: Love Reggie; great showman; very cool stat, but think you overstated the case at the end of your argument.

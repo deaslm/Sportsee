@@ -21,6 +21,17 @@ BRUIT = re.compile(
 # Début de la liste des autres fils de discussion Reddit (=bruit)
 AUTRES_FILS = re.compile(r"^r[/I]\S+ +il ?y? ?a ?\d* ?(j|m\.?|a)?\.?$")
 
+# Restes d'en-têtes de commentaires au milieu d'une ligne (fusionnés par l'OCR avec le texte voisin)
+ENTETE_INLINE = re.compile(
+    r"(?:\b\d{1,3}(?:\s+\d{1,3})?\s+)?R[ée]pondre\b"                  # bouton "Répondre" (+ votes avant)
+    r"|(?:r[ée]ponse\s+)?suppl[ée]mentaire\b"                           # "réponse supplémentaire"
+    r"|\bil y a\s*[~\-.]?\s*\d*\s*(?:j|m)\b\.?"                         # "il y a -1 m."
+    r"|^a\s+\d+\s*j\b"                                                  # reste de "il y a 10j"
+    r"|\S+\s+(?:A[Oo]\s+)?[~\-*.\s]*\d{1,3}\s*(?:j|m)\b\.?"            # pseudo + date ("hqppp AO -10 j")
+    r"|(?:Comm[.;,]?|Auteur\S*)\s*du\s*top(?:\s*\d{1,2}\s*%?)?"         # badge "Comm. du top 1%" (et ses variantes OCR)
+    r"|^:\s*"                                                           # deux-points isolé en début de ligne
+)
+
 def est_entete(l):
     """Vrai si la ligne contient une date ou un badge."""
     return bool(
@@ -66,6 +77,10 @@ def nettoyer(texte):
             l = re.sub(r"^il y a\s*[~\-.]?\s*\d*\s*(j|m\.?)?\s*"
                r"(Comm[.;,]?\s*du\s*top\s*\d{0,2}%?)?\s*", "", l).strip()
             sortie.append("")
+        # Restes d'en-têtes au milieu d'une ligne : supprimés, le texte du commentaire est conservé
+        l = re.sub(r"\s{2,}", " ", ENTETE_INLINE.sub(" ", l)).strip()
+        if re.fullmatch(r"[\w\-]+", l):
+            l = ""                                 # pseudo isolé restant (un seul mot sans ponctuation)
         if not pub and l and not BRUIT.match(l):
             sortie.append(l)                        # on garde la ligne si pas de pub, pas de bruit
     return "\n".join(sortie)                        # texte propre en sortie

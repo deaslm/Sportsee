@@ -1,115 +1,122 @@
-# Évalue le prototype avant améliorations
-
+# Évaluation RAGAS du système avant intégration SQL : RAG seul (recherche FAISS + génération)
+# Même questions, même modèle que evaluate_ragas_apres.py
+# Différence : l'ajout du routeur et de l'outil SQL
 import os
+import sys
+import json
+from typing import Literal
 from dotenv import load_dotenv
+from pydantic import BaseModel
 from datasets import Dataset
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy, context_precision, context_recall
 from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
-from mistralai.client import MistralClient
-from utils.vector_store import VectorStoreManager
+from routeur_rag_sql import outil_rag, PROMPT_REPONSE, llm as llm_generation
 from logfire_setup import rag_trace
+import logfire
 
 load_dotenv()
 KEY = os.getenv("MISTRAL_API_KEY")
 
-# LLM et embeddings utilisés par RAGAS pour juger les réponses
-llm = ChatMistralAI(model="mistral-small-latest", api_key=KEY)
+CHEMIN_QUESTIONS = "questions_test.json"
+CHEMIN_RESULTATS = "resultats_ragas_avant.csv"
+METRIQUES = ["faithfulness", "answer_relevancy", "context_precision", "context_recall"]
+
+
+# N'additionne que les compteurs de tokens numériques (sinon answer_relevancy = NaN)
+class ChatMistralAIRagas(ChatMistralAI):
+    def _combine_llm_outputs(self, llm_outputs):
+        usage = {}
+        for sortie in llm_outputs:
+            for cle, valeur in ((sortie or {}).get("token_usage") or {}).items():
+                if isinstance(valeur, (int, float)):
+                    usage[cle] = usage.get(cle, 0) + valeur
+        return {"token_usage": usage, "model_name": self.model}
+
+
+# LLM juge de RAGAS et embeddings
+llm = ChatMistralAIRagas(model="mistral-small-latest", api_key=KEY)
 embeddings = MistralAIEmbeddings(model="mistral-embed", api_key=KEY)
 
-# Chargement de l'index FAISS (vector_db/)
-vs = VectorStoreManager()
 
-# Client Mistral pour générer les réponses RAG
-client = MistralClient(api_key=KEY)
-
-# Jeu de test catégorisé
-# Un tuple = question, ground_truth (réponse correcte attendue), catégorie
-
-# Questions simples : formulation claire, réponse directe
-questions_simples = [
-    ("Qu'est-ce que le play-in tournament NBA ?",
-     "Le play-in permet aux équipes classées 7 à 10 de se qualifier pour les playoffs NBA.",
-     "simple"),
-    ("Quelle équipe a atteint les Finals NBA 2023 sans avoir l'avantage du terrain ?",
-     "Le Miami Heat, tête de série 8, a atteint les Finals 2023 sans avantage du terrain.",
-     "simple"),]
-
-# Questions complexes : nécessitent de croiser plusieurs infos / synthétiser
-questions_complexes = [
-    ("Quel joueur a le meilleur pourcentage de réussite à 3 points sur la saison ?",
-    "Zach LaVine affiche le meilleur pourcentage à 3 points parmi les joueurs à haut volume, avec 44,6%.",
-    "complexe"),
-    ("Compare les statistiques de rebonds offensifs des meilleurs scoreurs de la saison.",
-    "Parmi les 15 meilleurs scoreurs, Karl-Anthony Towns domine les rebonds offensifs "
-    "avec 209 prises, suivi de Nikola Jokić (203) et Giannis Antetokounmpo "
-    "(147). À l'opposé, Zach LaVine (22) et Tyler Herro (39) captent très peu "
-    "de rebonds offensifs.",
-    "complexe"),]
-
-# Questions bruitées : mal formulées (fautes, abréviations..)
-questions_bruitees = [
-    ("heat finals 2023 homecourt oui ou non ?",
-     "Non, le Heat n'avait pas l'avantage du terrain en 2023, ils étaient la tête de série 8.",
-     "bruité"),
-    ("play in nba utile ou pas arguments ??",
-     "Le play-in est jugé utile car il maintient l'intérêt en fin de saison"
-     "mais critiqué car il peut avantager des équipes inférieures.",
-     "bruité"),]
-
-# Fusion de toutes les questions
-TESTS = questions_simples + questions_complexes + questions_bruitees
+# MODÈLE PYDANTIC : structure attendue de chaque question du fichier JSON
+class QuestionTest(BaseModel):
+    id: str
+    categorie: Literal["simple", "complexe", "bruité", "mixte"]
+    source_attendue: Literal["rag", "sql", "mixte"]
+    question: str
+    ground_truth: str
 
 
-def rag_repondre(question):
-    """Cherche les 5 chunks les plus pertinents et génère une réponse via Mistral."""
-    chunks = vs.search(question, k=5)
-    contexte = "\n\n".join(c["text"] for c in chunks)
-    rep = client.chat(
-        model="mistral-small-latest",
-        messages=[{"role": "user", "content":
-                   f"Tu es un assistant NBA. Réponds uniquement à partir du contexte.\n\n"
-                   f"Contexte:\n{contexte}\n\nQuestion: {question}\nRéponse:"}]
-    )
-    return rep.choices[0].message.content, [c["text"] for c in chunks]
+def charger_questions(chemin: str) -> list[QuestionTest]:
+    """Lit le fichier JSON et valide chaque question (erreur explicite si une entrée est mal formée)."""
+    with open(chemin, encoding="utf-8") as f:
+        return [QuestionTest.model_validate(q) for q in json.load(f)]
 
 
-# Construction du dataset RAGAS
-print("Génération des réponses RAG...")
-data = {"question": [], "answer": [], "contexts": [], "ground_truth": [], "category": []}
+def rag_repondre(question: str):
+    """RAG seul : recherche FAISS puis génération, sans routage ni SQL (étapes tracées dans Logfire)."""
+    with logfire.span("recherche_faiss"):
+        contextes = outil_rag(question)
+        logfire.info("extraits_recuperes", nb_extraits=len(contextes))
+    if not contextes:
+        raise RuntimeError("aucun extrait trouvé")
+    with logfire.span("redaction_reponse"):
+        preuves = "\n\n---\n\n".join(contextes)
+        reponse = llm_generation.invoke(PROMPT_REPONSE.format(preuves=preuves, question=question)).content
+    return reponse, contextes
 
-for q, gt, cat in TESTS:
-    print(f"  [{cat}] {q[:55]}...")
-    # rag_trace valide via Pydantic et envoie les traces à Logfire
-    sortie = rag_trace(q, rag_repondre, categorie=cat)
-    data["question"].append(q)
+
+# Jeu de test sans "mixte"
+questions = [q for q in charger_questions(CHEMIN_QUESTIONS) if q.categorie != "mixte"]
+
+# 1. GÉNÉRATION DES RÉPONSES AVEC LE RAG SEUL
+print(f"\nGénération des réponses ({len(questions)} questions)...")
+data = {"question": [], "answer": [], "contexts": [], "ground_truth": []}
+infos_questions = []
+echecs = []
+
+for qt in questions:
+    print(f"  [{qt.id} | {qt.categorie}] {qt.question[:60]}...")
+    try:
+        # rag_trace : validation Pydantic de l'entrée et de la sortie + traces Logfire
+        sortie = rag_trace(qt.question, rag_repondre, qt.categorie)
+    except Exception as e:
+        print(f"Échec écarté du calcul : {e}")
+        echecs.append({"id": qt.id, "categorie": qt.categorie, "erreur": str(e)})
+        continue
+
+    data["question"].append(qt.question)
     data["answer"].append(sortie.reponse)
     data["contexts"].append([c.text for c in sortie.chunks])
-    data["ground_truth"].append(gt)
-    data["category"].append(cat)
+    data["ground_truth"].append(qt.ground_truth)
+    infos_questions.append({"id": qt.id, "categorie": qt.categorie})
 
-# Évaluation RAGAS (RAGAS utilise le LLM pour juger : fidélité, pertinence, précision, rappel)
+if not data["question"]:
+    sys.exit("Aucune réponse exploitable : évaluation impossible.")
+
+# 2. ÉVALUATION RAGAS (uniquement sur les réponses réussies)
 print("\nÉvaluation RAGAS en cours...")
-results = evaluate(
+resultats = evaluate(
     Dataset.from_dict(data),
     metrics=[faithfulness, answer_relevancy, context_precision, context_recall],
-    llm=llm,
-    embeddings=embeddings,
+    llm=llm, embeddings=embeddings,
 )
 
-# Affichage des résultats
-df = results.to_pandas()
-df["category"] = data["category"]
+df = resultats.to_pandas()
+for cle in ["id", "categorie"]:
+    df[cle] = [info[cle] for info in infos_questions]
 
-print("Scores par question")
-print(df[["category", "faithfulness", "answer_relevancy",
-          "context_precision", "context_recall"]].to_string())
+# 3. AFFICHAGE ET SAUVEGARDE
+print("\nScores par question")
+print(df[["id", "categorie"] + METRIQUES].round(3).to_string())
 
-print("Moyenne par catégorie")
-print(df.groupby("category")[
-    ["faithfulness", "answer_relevancy", "context_precision", "context_recall"]
-].mean().round(3))
+print("\nMoyenne par catégorie")
+print(df.groupby("categorie")[METRIQUES].mean().round(3))
 
-# Sauvegarde pour comparaison plus tard
-df.to_csv("resultats_ragas_avant.csv", index=False)
-print("Sauvegardé : resultats_ragas_avant.csv")
+print(f"\nÉchecs écartés : {len(echecs)}/{len(questions)}")
+for e in echecs:
+    print(f"  - {e['id']} ({e['categorie']}) : {e['erreur']}")
+
+df.to_csv(CHEMIN_RESULTATS, index=False)
+print(f"\nSauvegardé : {CHEMIN_RESULTATS}")

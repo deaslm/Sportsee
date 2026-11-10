@@ -1,0 +1,58 @@
+[
+  {
+    "id": "S1",
+    "categorie": "simple",
+    "source_attendue": "rag",
+    "question": "Qu'est-ce que le play-in tournament NBA ?",
+    "ground_truth": "Le play-in permet aux équipes classées 7 à 10 de se qualifier pour les playoffs NBA."
+  },
+  {
+    "id": "S2",
+    "categorie": "simple",
+    "source_attendue": "rag",
+    "question": "Quelle équipe a atteint les Finals NBA 2023 sans avoir l'avantage du terrain ?",
+    "ground_truth": "Le Miami Heat, tête de série 8, a atteint les Finals 2023 sans avantage du terrain."
+  },
+  {
+    "id": "C1",
+    "categorie": "complexe",
+    "source_attendue": "sql",
+    "question": "Parmi les 15 meilleurs marqueurs de la saison, quel joueur a le meilleur pourcentage de réussite à 3 points ?",
+    "ground_truth": "Parmi les 15 meilleurs marqueurs, Zach LaVine affiche le meilleur pourcentage à 3 points avec 44,6 %."
+  },
+  {
+    "id": "C2",
+    "categorie": "complexe",
+    "source_attendue": "sql",
+    "question": "Compare les rebonds offensifs des 15 meilleurs marqueurs de la saison.",
+    "ground_truth": "Parmi les 15 meilleurs marqueurs, Karl-Anthony Towns domine les rebonds offensifs avec 209 prises, suivi de Nikola Jokić (203) et Giannis Antetokounmpo (147). À l'opposé, Zach LaVine (22), Trae Young (38) et Tyler Herro (39) en captent très peu."
+  },
+  {
+    "id": "B1",
+    "categorie": "bruité",
+    "source_attendue": "rag",
+    "question": "heat finals 2023 homecourt oui ou non ?",
+    "ground_truth": "Non, le Heat n'avait pas l'avantage du terrain en 2023, ils étaient la tête de série 8."
+  },
+  {
+    "id": "B2",
+    "categorie": "bruité",
+    "source_attendue": "rag",
+    "question": "play in nba utile ou pas arguments ??",
+    "ground_truth": "Le play-in est jugé utile car il maintient l'intérêt en fin de saison mais critiqué car il peut avantager des équipes inférieures."
+  },
+  {
+    "id": "M1",
+    "categorie": "mixte",
+    "source_attendue": "mixte",
+    "question": "Qui est Nikola Jokić et quel est son pourcentage de tirs cette saison ?",
+    "ground_truth": "Nikola Jokić est un joueur des Denver Nuggets, cité par les fans parmi les meilleurs joueurs de la ligue. Il affiche 57,6 % de réussite aux tirs cette saison."
+  },
+  {
+    "id": "M2",
+    "categorie": "mixte",
+    "source_attendue": "mixte",
+    "question": "Qu'est-ce que le play-in et combien de points marque Zach LaVine cette saison ?",
+    "ground_truth": "Le play-in est un mini-tournoi qui permet aux équipes classées 7 à 10 de se qualifier pour les playoffs. Zach LaVine totalise 1724 points sur la saison."
+  }
+]
