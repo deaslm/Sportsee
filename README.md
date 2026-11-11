@@ -1,31 +1,31 @@
 # Assistant RAG avec Mistral
 
-Ce projet implémente un assistant virtuel basé sur le modèle Mistral, utilisant la technique (RAG) enrichie d'un agent SQL pour fournir des réponses précises sur les données NBA (contextuelles et chiffrées).
+Ce projet implémente un assistant virtuel basé sur le modèle Mistral, utilisant la technique de Retrieval-Augmented Generation (RAG) enrichie d'un outil SQL, pour répondre aux questions sur la NBA à partir de discussions de fans (Reddit) et de statistiques (Excel).
 
 ## Architecture du système
 
-Le système repose sur un routeur intelligent qui analyse chaque question et la dirige vers le bon outil :
+Le système repose sur un routeur qui analyse chaque question et la dirige vers le bon outil :
 
-- **Question contextuelle** (règles, événements..) -> `outil_rag` → recherche sémantique FAISS dans les chunks Reddit -> génération Mistral Large
-- **Question chiffrée** (stats, pourcentages..) -> `outil_sql` -> LangChain SQL Agent -> requête SQLite sur `sportsee.db` -> réponse structurée
-- **Question mixte** (contexte + chiffres) -> les deux outils sont appelés -> réponse synthétisée
+- **Question contextuelle** (règles, événements..) -> `outil_rag` -> recherche sémantique FAISS dans les textes Reddit nettoyés -> 5 extraits les plus proches
+- **Question chiffrée** (stats, pourcentages..) -> `outil_sql` -> le LLM écrit une requête SQL -> Python l'exécute sur `sportsee.db` (lecture seule) -> résultats bruts
+- **Question mixte** (contexte + chiffres) -> la question est découpée -> les deux outils sont appelés
 
-Le routeur est un agent ReAct (Reasoning + Acting) : il raisonne sur la question, choisit l'outil adapté, exécute, observe le résultat, puis formule la réponse finale.
+Le routeur fonctionne en trois étapes : le LLM (Mistral Large) décide de la source (rag, sql ou mixte, puis validée par Pydantic), Python appelle le ou les outils, puis le LLM rédige la réponse uniquement à partir des extraits et résultats obtenus. La question et la réponse sont validées par Pydantic, et chaque étape est tracée dans Logfire.
 
 ## Fonctionnalités
 
-- 🔍 **Recherche sémantique** avec FAISS pour les questions contextuelles
-- 🤖 **Génération de réponses** avec Mistral Large
-- 🗄️ **Agent SQL** pour les questions chiffrées 
-- 🔀 **Routeur rag/sql** qui détecte le type de question
-- 📊 **Évaluation RAGAS** avec Pydantic et traçage Logfire
-- ⚙️ **Paramètres personnalisables** (modèle, nombre de documents, score minimum)
+- 🔍 **Recherche sémantique** avec FAISS sur les textes Reddit nettoyés
+- 🗄️ **Outil SQL** pour les questions chiffrées (statistiques, classements)
+- 🔀 **Routeur** qui choisit automatiquement la source (RAG, SQL ou les deux)
+- ✅ **Validation Pydantic** des données à chaque étape
+- 📈 **Traçage Logfire** pas à pas
+- 📊 **Évaluation RAGAS** avant/après l'ajout du SQL
 
 ## Prérequis
 
-- Python 3.9+
+- Python 3.12
 - Clé API Mistral (obtenue sur [console.mistral.ai](https://console.mistral.ai/))
-- Token Logfire (traçage)
+- Token Logfire (obtenu sur [logfire.pydantic.dev](https://logfire.pydantic.dev/))
 
 ## Installation
 
@@ -39,12 +39,13 @@ cd <nom-du-repo>
 2. **Créer un environnement virtuel**
 
 ```bash
+# Création de l'environnement virtuel
 python -m venv .venv
 
-# Activation
-# Windows
+# Activation de l'environnement virtuel
+# Sur Windows
 .venv\Scripts\activate
-# macOS/Linux
+# Sur macOS/Linux
 source .venv/bin/activate
 ```
 
@@ -56,7 +57,7 @@ pip install -r requirements.txt
 
 4. **Configurer les clés API**
 
-Créez un fichier `.env` à la racine :
+Créez un fichier `.env` à la racine du projet (modèle : `.env.example`) :
 
 ```
 MISTRAL_API_KEY=votre_clé_api_mistral
@@ -67,43 +68,41 @@ LOGFIRE_TOKEN=votre_token_logfire
 
 ```
 .
-├── inputs/                     # Documents sources (PDF Reddit + NBA.xlsx)
-├── data_prep/                  # Scripts de préparation des données
-│   ├── extraire_pdf.py         # Extraction texte brut des PDF
-│   ├── nettoyage.py            # Nettoyage OCR
-│   ├── nettoyer_textes.py      # Nettoyage complet
-│   ├── lignes_frequentes.py    # Détection lignes répétitives
-│   └── chunker_reddit.py       # Découpage en chunks
-├── utils/                      # Modules utilitaires
-│   ├── config.py               # Configuration globale
-│   ├── data_loader.py          # Chargement des données
-│   └── vector_store.py         # Gestion index FAISS
+├── MistralChat.py              # Application Streamlit principale
+├── routeur_rag_sql.py          # Routeur RAG / SQL / mixte
+├── sql_tool.py                 # Outil SQL : question -> requête -> résultats
+├── load_excel_to_db.py         # Chargement de l'Excel dans la base SQLite
+├── sportsee.db                 # Base SQLite (players, teams, reports, stats, matches)
+├── indexer.py                  # Script pour indexer les documents
+├── models.py                   # Modèles Pydantic (entrées / sorties)
+├── logfire_setup.py            # Configuration du traçage Logfire
+├── evaluate_ragas.py           # Évaluation RAGAS avant (RAG seul)
+├── evaluate_ragas_apres.py     # Évaluation RAGAS après (RAG + SQL)
+├── questions_test.json         # Jeu de questions de test
+├── resultats_ragas_*.csv       # Résultats des évaluations
+├── audit_chunks.py             # Audit du bruit dans les chunks (+ audit_avant.txt)
+├── inputs/                     # Documents sources (PDF Reddit + Excel NBA)
+├── data_prep/                  # Préparation des textes Reddit
+│   ├── extraire_pdf.py         # OCR des PDF
+│   ├── lignes_frequentes.py    # Détection des lignes répétées (bruit)
+│   ├── nettoyage.py            # Règles de nettoyage
+│   ├── nettoyer_textes.py      # Nettoyage + validation Pydantic
+│   └── texte_propre/           # Textes nettoyés
 ├── vector_db/                  # Index FAISS et chunks
-│   ├── faiss_index.idx
-│   └── document_chunks.pkl
-├── indexer.py                  # Indexation des documents
-├── charger_excel_db.py         # Chargement Excel en SQLite
-├── sportsee.db                 # Base SQLite (générée par charger_excel_db.py)
-├── sql_tool.py                 # Agent SQL LangChain
-├── routeur_rag_sql.py          # Routeur RAG + SQL
-├── evaluate_ragas.py           # Évaluation RAGAS avant intégration SQL
-├── evaluate_ragas_après.py     # Évaluation RAGAS après intégration SQL
-├── logfire_setup.py            # Configuration traçage Logfire
-├── MistralChat.py              # Interface Streamlit
-├── resultats_ragas_avant.csv   # Scores RAGAS avant
-├── resultats_ragas_apres.csv   # Scores RAGAS après
-└── .env.example                # Exemple de configuration
+└── utils/                      # Modules utilitaires
+    ├── config.py               # Configuration de l'application
+    ├── data_loader.py          # Chargement des fichiers
+    └── vector_store.py         # Gestion de l'index vectoriel
 ```
 
 ## Utilisation
 
-### 1. Préparer les données textuelles
+La base SQL (`sportsee.db`) et l'index FAISS (`vector_db/`) sont déjà fournis dans le dépôt : après l'installation, l'application peut être lancée directement (étape 4). Les étapes 1 à 3 ne servent qu'à les reconstruire, par exemple après une mise à jour des fichiers sources.
+
+### 1. Préparer les textes
 
 ```bash
-# Extraire le texte des PDFs
 python data_prep/extraire_pdf.py
-
-# Nettoyer les textes extraits
 python data_prep/nettoyer_textes.py
 ```
 
@@ -113,87 +112,49 @@ python data_prep/nettoyer_textes.py
 python indexer.py
 ```
 
-Génère l'index FAISS dans `vector_db/`.
+Ce script charge les textes nettoyés (`data_prep/texte_propre/`), les découpe en chunks, génère les embeddings avec Mistral et sauvegarde l'index FAISS dans `vector_db/`.
 
-### 3. Charger les données Excel en base SQL
+### 3. Créer la base SQL
 
 ```bash
-python charger_excel_db.py
+python load_excel_to_db.py
 ```
 
-Génère `sportsee.db` avec les tables `players`, `teams`, `stats_joueurs`, `stats_equipes`.
-
-### 4. Lancer le routeur
-
-```python
-from routeur_rag_sql import repondre
-
-# Question contextuelle -> outil_rag
-repondre("Qu'est-ce que le play-in tournament NBA ?")
-
-# Question chiffrée -> outil_sql
-repondre("Quel joueur a le meilleur pourcentage à 3 points ?")
-```
-
-### 5. Lancer l'interface Streamlit
+### 4. Lancer l'application
 
 ```bash
 streamlit run MistralChat.py
 ```
 
-### 6. Évaluer les performances
+L'application sera accessible à l'adresse http://localhost:8501 dans votre navigateur.
+
+### 5. Évaluer le système
 
 ```bash
-# Évaluation avant intégration SQL
-python evaluate_ragas.py
-
-# Évaluation après intégration SQL
-python evaluate_ragas_apres.py
+python evaluate_ragas.py          # avant : RAG seul
+python evaluate_ragas_apres.py    # après : RAG + SQL
 ```
 
-## Évaluation RAGAS — Résultats comparatifs
-
-Catégorie | faithfulness avant | faithfulness après | Évolution 
-----------|--------------------|--------------------|-----------
-bruité    | 0.881              | **0.950**          | +0.069 
-simple    | 0.639              | **0.650**          | +0.011 
-complexe  | 0.750              | 0.000              | - 
-mixte     | -                  | 0.240              | nouveau 
-
+Les résultats et leur analyse sont présentés dans le rapport d'évaluation.
 
 ## Modules principaux
 
-### `MistralChat.py`
-Application Streamlit principale : interface de chat, appel au pipeline RAG, affichage des réponses.
-
-### `utils/vector_store.py`
-Gère l'index vectoriel FAISS et la recherche sémantique : chargement et découpage des documents, génération des embeddings avec Mistral, création et interrogation de l'index FAISS.
-
-### `utils/query_classifier.py`
-Détermine si une requête nécessite une recherche RAG : analyse des mots-clés, classification avec le modèle Mistral, détection des questions spécifiques vs générales.
-
-### `utils/database.py`
-Gère la base de données SQLite pour les interactions : enregistrement des questions et réponses, stockage des feedbacks utilisateurs, récupération des statistiques.
-
-### `charger_excel_db.py`
-Charge le fichier `regular NBA.xlsx` dans une base SQLite (`sportsee.db`) avec 4 tables : `players`, `teams`, `stats_joueurs`, `stats_equipes`.
-
 ### `routeur_rag_sql.py`
-Agent ReAct (LangChain) qui route automatiquement les questions vers `outil_rag` (FAISS + Mistral) ou `outil_sql` (LangChain SQL Agent) selon leur nature. Utilise `mistral-large-latest` pour garantir le respect du format ReAct.
+Le LLM classe la question (rag, sql ou mixte), Python appelle le ou les outils, puis le LLM rédige la réponse à partir des seuls résultats obtenus.
 
 ### `sql_tool.py`
-Agent SQL LangChain connecté à `sportsee.db`. Utilise `sample_rows_in_table_info=0` pour forcer l'exécution des requêtes SQL plutôt que de déduire les réponses depuis les exemples de lignes affichés dans le schéma.
+Le LLM écrit une requête SQL à partir du schéma, du dictionnaire des données et d'exemples ; Python l'exécute en lecture seule. Les questions hors des données disponibles sont signalées comme non disponibles.
 
-### `evaluate_ragas.py` / `evaluate_ragas_apres.py`
-Scripts d'évaluation automatique avec RAGAS (faithfulness, context_precision, context_recall). Utilisent Pydantic pour valider les entrées/sorties.
+### `utils/vector_store.py`
+Gère l'index vectoriel FAISS et la recherche sémantique : découpage des documents, génération et validation des embeddings avec Mistral, création et interrogation de l'index.
 
 ### `logfire_setup.py`
-Traçage structuré du pipeline RAG avec Logfire pour monitorer les étapes clés, les erreurs et les performances du pipeline.
+Valide la question et la réponse avec Pydantic et trace chaque étape du pipeline dans Logfire.
 
 ## Personnalisation
 
 Vous pouvez personnaliser l'application en modifiant les paramètres dans `utils/config.py` :
-- Modèles Mistral utilisés
+- Dossier des documents à indexer
 - Taille des chunks et chevauchement
-- Nombre de documents par défaut
-- Nom de la commune ou organisation
+- Nombre de documents récupérés
+- Modèle d'embeddings
