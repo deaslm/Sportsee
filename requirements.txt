@@ -1,15 +1,36 @@
+# Interface
 streamlit==1.44.1
+
+# Modèles Mistral et orchestration LangChain
 mistralai==0.4.2
-langchain==0.3.23
+langchain==0.2.17
+langchain-core==0.2.43
+langchain-community==0.2.19
+langchain-mistralai==0.1.13
+
+# Recherche vectorielle
 faiss-cpu==1.10.0
+numpy==1.26.4
+
+# Lecture des documents et OCR des PDF
+pymupdf==2.0
+pillow==11.3.0
+easyocr==1.7.2
 PyPDF2==3.0.1
 python-docx==1.1.2
+
+# Données Excel - SQLite)
 pandas==2.2.3
 openpyxl==3.1.5
-python-dotenv==1.1.0
-requests==2.32.3
-streamlit-feedback==0.1.4
-pymupdf>=1.22.0
-pillow>=9.0.0
-easyocr
-tqdm
+
+# Validation, évaluation et traçage
+pydantic==2.14.1
+ragas==0.1.21
+datasets==4.8.5
+pyarrow==23.0.1                   
+logfire==5.4.0
+
+
+python-dotenv==1.1.0        # lit fichier .env
+requests==2.32.3           # télécharge un fichier depuis une URL
+tqdm==4.70.1                # barres de progression
