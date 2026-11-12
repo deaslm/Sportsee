@@ -8,7 +8,7 @@ with open("vector_db/document_chunks.pkl", "rb") as f:
 
 def famille(c):                          # classe chaque chunk dans une famille
     s = c["metadata"]["source"]
-    if s.endswith(".pdf"): return "PDF"
+    if s.endswith((".pdf", ".txt")): return "PDF"   
     if "Analyse Vide" in s: return "Feuille vide"
     return "Excel"
 

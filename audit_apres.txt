@@ -1,0 +1,7 @@
+Répartition : {'PDF': 73}
+Bruit : 0 chunks pollués sur 73
+Début coupé : 21 sur 73
+OCR : ';' = 269 | ',' = 255
+Excel sans en-tête : 0 sur 0
+Excel avec NaN : 0 sur 0
+Doublons : 0
